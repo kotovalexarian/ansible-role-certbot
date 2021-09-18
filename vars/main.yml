@@ -1,0 +1,17 @@
+---
+certbot__group: 'letsencrypt'
+certbot__conf_dir: '/etc/letsencrypt'
+certbot__conf_cli: '{{ certbot__conf_dir }}/cli.ini'
+certbot__conf_nginx: '{{ certbot__conf_dir }}/options-ssl-nginx.conf'
+certbot__archive_dir: '{{ certbot__conf_dir }}/archive'
+certbot__live_dir: '{{ certbot__conf_dir }}/live'
+
+certbot__nginx_ssl_ciphers:
+  - 'ECDHE-ECDSA-AES128-GCM-SHA256'
+  - 'ECDHE-RSA-AES128-GCM-SHA256'
+  - 'ECDHE-ECDSA-AES256-GCM-SHA384'
+  - 'ECDHE-RSA-AES256-GCM-SHA384'
+  - 'ECDHE-ECDSA-CHACHA20-POLY1305'
+  - 'ECDHE-RSA-CHACHA20-POLY1305'
+  - 'DHE-RSA-AES128-GCM-SHA256'
+  - 'DHE-RSA-AES256-GCM-SHA384'

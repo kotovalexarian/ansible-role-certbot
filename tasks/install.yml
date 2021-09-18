@@ -1,0 +1,86 @@
+---
+- name: Create Let's Encrypt system group
+  group:
+    name: '{{ certbot__group }}'
+    system: true
+
+- name: Install Certbot
+  apt:
+    name: certbot
+
+- name: Create directories for Let's Encrypt configuration
+  file:
+    state: directory
+    path: '{{ item }}'
+    mode: 'u=rwx,go=rx'
+    owner: root
+    group: root
+  with_items:
+    - '{{ certbot__conf_dir }}'
+    - '{{ certbot__archive_dir }}'
+    - '{{ certbot__archive_dir }}/{{ certbot__cert_name }}'
+    - '{{ certbot__live_dir }}'
+    - '{{ certbot__live_dir }}/{{ certbot__cert_name }}'
+
+- name: Install Let's Encrypt config
+  template:
+    src: templates/certbot/cli.ini
+    dest: '{{ certbot__conf_cli }}'
+    mode: 'u=rw,go=r'
+    owner: root
+    group: root
+
+- name: Install Nginx SSL options
+  template:
+    src: templates/certbot/options-ssl-nginx.conf
+    dest: '{{ certbot__conf_nginx }}'
+    mode: 'u=rw,go=r'
+    owner: root
+    group: root
+
+- name: Obtain Let's Encrypt certificate
+  command: 'certbot certonly'
+  register: certbot__result
+  when: certbot__run|bool
+  changed_when: >-
+    certbot__result.stdout is
+    not search('Certificate not yet due for renewal; no action taken.')
+
+- name: Find Let's Encrypt certificates and chains
+  register: certs_and_chains
+  find:
+    paths: '{{ certbot__archive_dir }}/{{ certbot__cert_name }}'
+    patterns:
+      - 'cert*.pem'
+      - 'chain*.pem'
+      - 'fullchain*.pem'
+
+- name: Find Let's Encrypt private keys
+  register: privkeys
+  find:
+    paths: '{{ certbot__archive_dir }}/{{ certbot__cert_name }}'
+    patterns: 'privkey*.pem'
+
+- name: Display Let's Encrypt certificates and chains
+  debug:
+    msg: "{{ certs_and_chains.files | map(attribute='path') | list }}"
+
+- name: Display Let's Encrypt private keys
+  debug:
+    msg: "{{ privkeys.files | map(attribute='path') | list }}"
+
+- name: Change group of Let's Encrypt certificates and chains
+  file:
+    path: '{{ item }}'
+    mode: 'u=rw,go=r'
+    owner: root
+    group: root
+  with_items: "{{ certs_and_chains.files | map(attribute='path') | list }}"
+
+- name: Change group of Let's Encrypt private keys
+  file:
+    path: '{{ item }}'
+    mode: 'u=rw,g=r,o='
+    owner: root
+    group: '{{ certbot__group }}'
+  with_items: "{{ privkeys.files | map(attribute='path') | list }}"

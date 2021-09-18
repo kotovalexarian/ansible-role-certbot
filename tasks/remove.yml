@@ -1,0 +1,6 @@
+---
+- name: Uninstall Certbot
+  apt:
+    name: certbot
+    state: absent
+    purge: false

@@ -1,0 +1,13 @@
+---
+- fail:
+    msg: 'Invalid `certbot__state`: {{ certbot__state }}'
+  when: (certbot__state != None) and
+        (certbot__state != 'purge') and
+        (certbot__state != 'remove') and
+        (certbot__state != 'install')
+- include_tasks: purge.yml
+  when: certbot__state == 'purge'
+- include_tasks: remove.yml
+  when: certbot__state == 'remove'
+- include_tasks: install.yml
+  when: certbot__state == 'install'
