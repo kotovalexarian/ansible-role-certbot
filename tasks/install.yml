@@ -24,7 +24,7 @@
 
 - name: Install Let's Encrypt config
   template:
-    src: templates/certbot/cli.ini
+    src: templates/cli.ini
     dest: '{{ certbot__conf_cli }}'
     mode: 'u=rw,go=r'
     owner: root
@@ -32,7 +32,7 @@
 
 - name: Install Nginx SSL options
   template:
-    src: templates/certbot/options-ssl-nginx.conf
+    src: templates/options-ssl-nginx.conf
     dest: '{{ certbot__conf_nginx }}'
     mode: 'u=rw,go=r'
     owner: root
